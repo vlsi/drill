@@ -49,7 +49,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-import sun.security.jgss.GSSUtil;
+//import sun.security.jgss.GSSUtil;
 
 import javax.security.auth.Subject;
 import java.lang.reflect.Field;
@@ -263,7 +263,7 @@ public class TestSpnegoAuthentication {
         final GSSManager gssManager = GSSManager.getInstance();
         GSSContext gssContext = null;
         try {
-          final Oid oid = GSSUtil.GSS_SPNEGO_MECH_OID;
+          final Oid oid = null;//GSSUtil.GSS_SPNEGO_MECH_OID;
           final GSSName serviceName = gssManager.createName(spnegoHelper.SERVER_PRINCIPAL, GSSName.NT_USER_NAME, oid);
 
           gssContext = gssManager.createContext(serviceName, oid, null, GSSContext.DEFAULT_LIFETIME);

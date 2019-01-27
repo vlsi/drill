@@ -57,7 +57,7 @@ public class BootStrapContext implements AutoCloseable {
   private static final int MIN_SCAN_THREADPOOL_SIZE = 4; // Magic num
 
   // DRILL_HOST_NAME sets custom host name. See drill-env.sh for details.
-  private static final String customHostName = System.getenv("DRILL_HOST_NAME");
+  private static final String customHostName = System.getProperty("DRILL_HOST_NAME", "localhost");
   private static final String processUserName = System.getProperty("user.name");
 
   private final DrillConfig config;
