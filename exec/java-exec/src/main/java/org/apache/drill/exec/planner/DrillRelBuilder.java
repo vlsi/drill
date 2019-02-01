@@ -17,10 +17,13 @@
  */
 package org.apache.drill.exec.planner;
 
+import static org.apache.drill.exec.planner.logical.DrillRel.DRILL_LOGICAL;
+
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.tools.RelBuilder;
@@ -59,6 +62,10 @@ public class DrillRelBuilder extends RelBuilder {
     return new RelBuilderFactory() {
       public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
         return new DrillRelBuilder(context, cluster, schema);
+      }
+
+      @Override public RelTraitSet getImplicitTraits() {
+        return context.unwrap(RelTraitSet.class);
       }
     };
   }

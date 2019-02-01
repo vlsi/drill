@@ -33,21 +33,13 @@ public class DrillFilterAggregateTransposeRule extends FilterAggregateTransposeR
   // Here override match method, such that the rule matches with Rel in the same CONVENTION.
 
   public static final FilterAggregateTransposeRule INSTANCE = new DrillFilterAggregateTransposeRule(
-      DrillRelBuilder.proto(Contexts.of(RelFactories.DEFAULT_FILTER_FACTORY)));
+      DrillRelFactories.LOGICAL_BUILDER);
 
   public static final FilterAggregateTransposeRule DRILL_LOGICAL_INSTANCE = new DrillFilterAggregateTransposeRule(
-      DrillRelBuilder.proto(DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY, DrillRelFactories.DRILL_LOGICAL_AGGREGATE_FACTORY));
+      DrillRelFactories.DRILL_LOGICAL_BUILDER);
 
   private DrillFilterAggregateTransposeRule(RelBuilderFactory relBuilderFactory) {
     super(Filter.class, relBuilderFactory, Aggregate.class);
-  }
-
-  @Override
-  public boolean matches(RelOptRuleCall call) {
-    final Filter filter = call.rel(0);
-    final Aggregate aggregate = call.rel(1);
-    return filter.getTraitSet().getTrait(ConventionTraitDef.INSTANCE)
-        == aggregate.getTraitSet().getTrait(ConventionTraitDef.INSTANCE);
   }
 
 }

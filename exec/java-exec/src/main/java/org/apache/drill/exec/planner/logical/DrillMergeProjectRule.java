@@ -38,18 +38,18 @@ public class DrillMergeProjectRule extends ProjectMergeRule {
   private FunctionImplementationRegistry functionRegistry;
   private static DrillMergeProjectRule INSTANCE = null;
 
-  public static DrillMergeProjectRule getInstance(boolean force, ProjectFactory pFactory,
+  public static DrillMergeProjectRule getInstance(boolean force,
       FunctionImplementationRegistry functionRegistry) {
     if (INSTANCE == null) {
-      INSTANCE = new DrillMergeProjectRule(force, pFactory, functionRegistry);
+      INSTANCE = new DrillMergeProjectRule(force, functionRegistry);
     }
     return INSTANCE;
   }
 
-  private DrillMergeProjectRule(boolean force, ProjectFactory pFactory,
+  private DrillMergeProjectRule(boolean force,
       FunctionImplementationRegistry functionRegistry) {
 
-    super(force, DrillRelBuilder.proto(pFactory));
+    super(force, DrillRelFactories.LOGICAL_BUILDER);
     this.functionRegistry = functionRegistry;
   }
 
@@ -57,12 +57,6 @@ public class DrillMergeProjectRule extends ProjectMergeRule {
   public boolean matches(RelOptRuleCall call) {
     Project topProject = call.rel(0);
     Project bottomProject = call.rel(1);
-
-    // Make sure both projects be LogicalProject.
-    if (topProject.getTraitSet().getTrait(ConventionTraitDef.INSTANCE) != Convention.NONE ||
-        bottomProject.getTraitSet().getTrait(ConventionTraitDef.INSTANCE) != Convention.NONE) {
-      return false;
-    }
 
     // We have a complex output type do not fire the merge project rule
     if (checkComplexOutput(topProject) || checkComplexOutput(bottomProject)) {

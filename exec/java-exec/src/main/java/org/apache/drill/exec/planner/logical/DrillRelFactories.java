@@ -18,7 +18,9 @@
 package org.apache.drill.exec.planner.logical;
 
 import org.apache.calcite.plan.Contexts;
+import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
@@ -40,6 +42,7 @@ import static org.apache.calcite.rel.core.RelFactories.DEFAULT_FILTER_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_JOIN_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_MATCH_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_PROJECT_FACTORY;
+import static org.apache.calcite.rel.core.RelFactories.DEFAULT_SEMI_JOIN_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_SET_OP_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_SORT_FACTORY;
 import static org.apache.calcite.rel.core.RelFactories.DEFAULT_TABLE_SCAN_FACTORY;
@@ -78,16 +81,33 @@ public class DrillRelFactories {
    */
   public static final RelBuilderFactory LOGICAL_BUILDER =
       DrillRelBuilder.proto(
-          Contexts.of(DEFAULT_PROJECT_FACTORY,
+          Contexts.of(
+              RelTraitSet.createEmpty().plus(Convention.NONE),
+              DEFAULT_PROJECT_FACTORY,
               DEFAULT_FILTER_FACTORY,
               DEFAULT_JOIN_FACTORY,
-              DRILL_SEMI_JOIN_FACTORY,
+              DEFAULT_SEMI_JOIN_FACTORY,
               DEFAULT_SORT_FACTORY,
               DEFAULT_AGGREGATE_FACTORY,
               DEFAULT_MATCH_FACTORY,
               DEFAULT_SET_OP_FACTORY,
               DEFAULT_VALUES_FACTORY,
               DEFAULT_TABLE_SCAN_FACTORY));
+
+  public static final RelBuilderFactory DRILL_LOGICAL_BUILDER =
+          DrillRelBuilder.proto(
+                  Contexts.of(
+                          RelTraitSet.createEmpty().plus(DRILL_LOGICAL),
+                          DRILL_LOGICAL_PROJECT_FACTORY,
+                          DRILL_LOGICAL_FILTER_FACTORY,
+                          DRILL_LOGICAL_JOIN_FACTORY,
+                          //DRILL_LOGICAL_SEMI_JOIN_FACTORY,
+                          //DRILL_LOGICAL_SORT_FACTORY,
+                          //DRILL_LOGICAL_MATCH_FACTORY,
+                          //DRILL_LOGICAL_SET_OP_FACTORY,
+                          //DRILL_LOGICAL_VALUES_FACTORY,
+                          //DRILL_LOGICAL_TABLE_SCAN_FACTORY
+                          DRILL_LOGICAL_AGGREGATE_FACTORY));
 
   /**
    * Implementation of {@link RelFactories.ProjectFactory} that returns a vanilla

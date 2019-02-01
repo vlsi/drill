@@ -17,6 +17,9 @@
  */
 package org.apache.drill.exec.planner;
 
+import static org.apache.drill.exec.planner.logical.DrillRel.DRILL_LOGICAL;
+
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.drill.shaded.guava.com.google.common.base.Preconditions;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -80,7 +83,7 @@ public interface RuleInstance {
       new FilterMergeRule(DrillRelFactories.LOGICAL_BUILDER);
 
   FilterMergeRule DRILL_FILTER_MERGE_RULE =
-      new FilterMergeRule(DrillRelBuilder.proto(DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY));
+      new FilterMergeRule(DrillRelFactories.DRILL_LOGICAL_BUILDER);
 
   FilterCorrelateRule FILTER_CORRELATE_RULE =
       new FilterCorrelateRule(DrillRelFactories.LOGICAL_BUILDER);
@@ -116,7 +119,7 @@ public interface RuleInstance {
       new FilterSetOpTransposeRule(DrillRelFactories.LOGICAL_BUILDER);
 
   ProjectSetOpTransposeRule PROJECT_SET_OP_TRANSPOSE_RULE =
-      new ProjectSetOpTransposeRule(DrillConditions.PRESERVE_ITEM, DrillRelFactories.LOGICAL_BUILDER);
+          new MyProjectSetOpTransposeRule();
 
   ProjectRemoveRule PROJECT_REMOVE_RULE =
       new ProjectRemoveRule(DrillRelFactories.LOGICAL_BUILDER);
@@ -140,11 +143,10 @@ public interface RuleInstance {
    * to its inputs.
    */
   JoinPushTransitivePredicatesRule DRILL_JOIN_PUSH_TRANSITIVE_PREDICATES_RULE =
-      new JoinPushTransitivePredicatesRule(Join.class, DrillRelBuilder.proto(
-          DrillRelFactories.DRILL_LOGICAL_JOIN_FACTORY, DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY));
+      new JoinPushTransitivePredicatesRule(Join.class, DrillRelFactories.DRILL_LOGICAL_BUILDER);
 
   FilterRemoveIsNotDistinctFromRule REMOVE_IS_NOT_DISTINCT_FROM_RULE =
-      new FilterRemoveIsNotDistinctFromRule(DrillRelBuilder.proto(DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY));
+      new FilterRemoveIsNotDistinctFromRule(DrillRelFactories.DRILL_LOGICAL_BUILDER);
 
   SubQueryRemoveRule SUB_QUERY_FILTER_REMOVE_RULE =
       new SubQueryRemoveRule.SubQueryFilterRemoveRule(DrillRelFactories.LOGICAL_BUILDER);
@@ -154,4 +156,16 @@ public interface RuleInstance {
 
   SubQueryRemoveRule SUB_QUERY_JOIN_REMOVE_RULE =
       new SubQueryRemoveRule.SubQueryJoinRemoveRule(DrillRelFactories.LOGICAL_BUILDER);
+
+  class MyProjectSetOpTransposeRule extends ProjectSetOpTransposeRule {
+
+    public MyProjectSetOpTransposeRule() {
+      super(DrillConditions.PRESERVE_ITEM, DrillRelFactories.LOGICAL_BUILDER);
+    }
+
+    @Override
+    public boolean matches(RelOptRuleCall call) {
+      return super.matches(call);// && call.rel(0).getConvention() == call.rel(1).getConvention();
+    }
+  }
 }

@@ -91,8 +91,7 @@ public class DrillFilterJoinRules {
   /** The same as above, but with Drill's operators. */
   public static final FilterJoinRule DRILL_FILTER_INTO_JOIN =
       new FilterJoinRule.FilterIntoJoinRule(true,
-          DrillRelBuilder.proto(DrillRelFactories.DRILL_LOGICAL_PROJECT_FACTORY,
-              DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY), STRICT_EQUAL_IS_DISTINCT_FROM);
+          DrillRelFactories.DRILL_LOGICAL_BUILDER, STRICT_EQUAL_IS_DISTINCT_FROM);
 
   /** Rule that pushes predicates in a Join into the inputs to the join. */
   public static final FilterJoinRule JOIN_PUSH_CONDITION =

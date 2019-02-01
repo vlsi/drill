@@ -21,10 +21,21 @@ import org.apache.drill.common.logical.data.LogicalOperator;
 import org.apache.drill.exec.planner.common.DrillRelNode;
 import org.apache.calcite.plan.Convention;
 
+import java.util.function.Supplier;
+
 /**
  * Relational expression that is implemented in Drill.
  */
+@org.apache.calcite.plan.ImplicitTrait(DrillRel.ConventionFactory.class)
 public interface DrillRel extends DrillRelNode {
+
+  class ConventionFactory implements Supplier<Convention> {
+    @Override
+    public Convention get() {
+      return DRILL_LOGICAL;
+    }
+  }
+
   /** Calling convention for relational expressions that are "implemented" by
    * generating Drill logical plans. */
   Convention DRILL_LOGICAL = new Convention.Impl("LOGICAL", DrillRel.class);

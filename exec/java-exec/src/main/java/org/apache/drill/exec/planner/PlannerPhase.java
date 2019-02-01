@@ -17,6 +17,10 @@
  */
 package org.apache.drill.exec.planner;
 
+import static org.apache.drill.exec.planner.logical.DrillRel.DRILL_LOGICAL;
+
+import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
 import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet;
 import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet.Builder;
 import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
@@ -251,10 +255,7 @@ public enum PlannerPhase {
   static final RelOptRule DRILL_JOIN_TO_MULTIJOIN_RULE =
       new JoinToMultiJoinRule(DrillJoinRel.class, DrillRelFactories.LOGICAL_BUILDER);
   static final RelOptRule DRILL_LOPT_OPTIMIZE_JOIN_RULE =
-      new LoptOptimizeJoinRule(DrillRelBuilder.proto(
-          DrillRelFactories.DRILL_LOGICAL_JOIN_FACTORY,
-          DrillRelFactories.DRILL_LOGICAL_PROJECT_FACTORY,
-          DrillRelFactories.DRILL_LOGICAL_FILTER_FACTORY));
+      new LoptOptimizeJoinRule(DrillRelFactories.DRILL_LOGICAL_BUILDER);
 
   /**
    * Get a list of logical rules that can be turned on or off by session/system options.
@@ -305,8 +306,9 @@ public enum PlannerPhase {
        */
       DrillPushFilterPastProjectRule.INSTANCE,
       // Due to infinite loop in planning (DRILL-3257/CALCITE-1271), temporarily use this rule in Hep planner
-      // RuleInstance.FILTER_SET_OP_TRANSPOSE_RULE,
-      DrillFilterAggregateTransposeRule.INSTANCE,
+      RuleInstance.FILTER_SET_OP_TRANSPOSE_RULE,
+      FilterAggregateTransposeRule.INSTANCE,
+      //DrillFilterAggregateTransposeRule.INSTANCE,
       DrillProjectLateralJoinTransposeRule.INSTANCE,
       DrillProjectPushIntoLateralJoinRule.INSTANCE,
       RuleInstance.FILTER_MERGE_RULE,
@@ -325,7 +327,7 @@ public enum PlannerPhase {
       DrillPushProjectPastJoinRule.INSTANCE,
 
       // Due to infinite loop in planning (DRILL-3257/CALCITE-1271), temporarily use this rule in Hep planner
-      // RuleInstance.PROJECT_SET_OP_TRANSPOSE_RULE,
+       RuleInstance.PROJECT_SET_OP_TRANSPOSE_RULE,
       RuleInstance.PROJECT_WINDOW_TRANSPOSE_RULE,
       DrillPushProjectIntoScanRule.INSTANCE,
       DrillPushProjectIntoScanRule.DRILL_LOGICAL_INSTANCE,
@@ -376,7 +378,7 @@ public enum PlannerPhase {
     ImmutableSet.Builder<RelOptRule> basicRules = ImmutableSet.<RelOptRule>builder()
         .addAll(staticRuleSet)
         .add(
-            DrillMergeProjectRule.getInstance(true, RelFactories.DEFAULT_PROJECT_FACTORY,
+            DrillMergeProjectRule.getInstance(true,
                 optimizerRulesContext.getFunctionRegistry())
             );
     if (optimizerRulesContext.getPlannerSettings().isHashJoinEnabled() &&
