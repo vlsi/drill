@@ -143,8 +143,8 @@ public enum PlannerPhase {
     public RuleSet getRules(OptimizerRulesContext context, Collection<StoragePlugin> plugins) {
       List<RelOptRule> rules = Lists.newArrayList();
       if (context.getPlannerSettings().isJoinOptimizationEnabled()) {
-        rules.add(DRILL_JOIN_TO_MULTIJOIN_RULE);
-        rules.add(DRILL_LOPT_OPTIMIZE_JOIN_RULE);
+        //rules.add(DRILL_JOIN_TO_MULTIJOIN_RULE);
+        //rules.add(DRILL_LOPT_OPTIMIZE_JOIN_RULE);
       }
       rules.add(RuleInstance.PROJECT_REMOVE_RULE);
       return PlannerPhase.mergedRuleSets(
