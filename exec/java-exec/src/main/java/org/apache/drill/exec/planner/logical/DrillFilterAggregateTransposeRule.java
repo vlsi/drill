@@ -17,15 +17,10 @@
  */
 package org.apache.drill.exec.planner.logical;
 
-import org.apache.calcite.plan.Contexts;
-import org.apache.calcite.plan.ConventionTraitDef;
-import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.RelFactories;
 import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
 import org.apache.calcite.tools.RelBuilderFactory;
-import org.apache.drill.exec.planner.DrillRelBuilder;
 
 public class DrillFilterAggregateTransposeRule extends FilterAggregateTransposeRule{
 

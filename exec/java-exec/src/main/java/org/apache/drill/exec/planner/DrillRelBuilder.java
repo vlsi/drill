@@ -17,8 +17,6 @@
  */
 package org.apache.drill.exec.planner;
 
-import static org.apache.drill.exec.planner.logical.DrillRel.DRILL_LOGICAL;
-
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;

@@ -17,15 +17,8 @@
  */
 package org.apache.drill.exec.planner;
 
-import static org.apache.drill.exec.planner.logical.DrillRel.DRILL_LOGICAL;
-
-import org.apache.calcite.plan.RelTraitSet;
-import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
-import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet;
-import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet.Builder;
-import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
 import org.apache.calcite.plan.RelOptRule;
-import org.apache.calcite.rel.core.RelFactories;
+import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.tools.RuleSet;
@@ -64,13 +57,13 @@ import org.apache.drill.exec.planner.logical.DrillWindowRule;
 import org.apache.drill.exec.planner.logical.partition.ParquetPruneScanRule;
 import org.apache.drill.exec.planner.logical.partition.PruneScanRule;
 import org.apache.drill.exec.planner.physical.ConvertCountToDirectScan;
-import org.apache.drill.exec.planner.physical.LateralJoinPrule;
 import org.apache.drill.exec.planner.physical.DirectScanPrule;
 import org.apache.drill.exec.planner.physical.FilterPrule;
 import org.apache.drill.exec.planner.physical.HashAggPrule;
 import org.apache.drill.exec.planner.physical.HashJoinPrule;
-import org.apache.drill.exec.planner.physical.LimitPrule;
+import org.apache.drill.exec.planner.physical.LateralJoinPrule;
 import org.apache.drill.exec.planner.physical.LimitExchangeTransposeRule;
+import org.apache.drill.exec.planner.physical.LimitPrule;
 import org.apache.drill.exec.planner.physical.MergeJoinPrule;
 import org.apache.drill.exec.planner.physical.NestedLoopJoinPrule;
 import org.apache.drill.exec.planner.physical.PlannerSettings;
@@ -90,6 +83,9 @@ import org.apache.drill.exec.planner.physical.WriterPrule;
 import org.apache.drill.exec.store.AbstractStoragePlugin;
 import org.apache.drill.exec.store.StoragePlugin;
 import org.apache.drill.exec.store.parquet.ParquetPushDownFilter;
+import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet;
+import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableSet.Builder;
+import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -23,7 +23,6 @@ import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.rules.FilterJoinRule;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
-import org.apache.drill.exec.planner.DrillRelBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
