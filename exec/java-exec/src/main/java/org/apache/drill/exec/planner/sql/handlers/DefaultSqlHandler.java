@@ -687,7 +687,7 @@ public class DefaultSqlHandler extends AbstractSqlHandler {
         PlannerPhase.SUBQUERY_REWRITE, convertedNode);
 
     RelNode decorrelatedNode = RelDecorrelator.decorrelateQuery(transformedNode,
-        DrillRelFactories.LOGICAL_BUILDER.create(transformedNode.getCluster(), null));
+        DrillRelFactories.LOGICAL_BUILDER);
 
     return transform(PlannerType.HEP, PlannerPhase.WINDOW_REWRITE, decorrelatedNode);
   }
