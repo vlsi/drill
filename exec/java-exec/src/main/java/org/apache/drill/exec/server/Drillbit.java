@@ -265,7 +265,11 @@ public class Drillbit implements AutoCloseable {
     // unreachable, however current approach seems to be good enough.
     Thread shutdownHook = this.shutdownHook;
     if (shutdownHook != null && Thread.currentThread() != shutdownHook) {
-      Runtime.getRuntime().removeShutdownHook(shutdownHook);
+      try {
+        Runtime.getRuntime().removeShutdownHook(shutdownHook);
+      } catch (IllegalArgumentException e) {
+        // If shutdown is in progress, just ignore the removal
+      }
     }
     updateState(State.QUIESCENT);
     stateManager.setState(DrillbitState.GRACE);

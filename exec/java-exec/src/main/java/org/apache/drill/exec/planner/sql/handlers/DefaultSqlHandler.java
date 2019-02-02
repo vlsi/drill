@@ -18,13 +18,23 @@
 package org.apache.drill.exec.planner.sql.handlers;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.apache.calcite.plan.RelOptListener;
+import org.apache.calcite.plan.RelTrait;
+import org.apache.calcite.plan.volcano.AbstractConverter;
+import org.apache.calcite.plan.volcano.RelSubset;
+import org.apache.calcite.rel.externalize.RelWriterImpl;
 import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
 import org.apache.drill.shaded.guava.com.google.common.collect.Sets;
 import org.apache.calcite.plan.RelOptCostImpl;
@@ -428,8 +438,25 @@ public class DefaultSqlHandler extends AbstractSqlHandler {
       Preconditions.checkArgument(planner instanceof VolcanoPlanner,
           "Cluster is expected to be constructed using VolcanoPlanner. Was actually of type %s.", planner.getClass()
               .getName());
+      try {
       output = program.run(planner, input, toTraits,
           ImmutableList.of(), ImmutableList.of());
+      } catch(RelOptPlanner.CannotPlanException e) {
+        DeadEndFinder finder = new DeadEndFinder();
+        RelNode relNode = planner.getRoot();
+        finder.visit(relNode);
+        for (RelSubset deadEnd : finder.deadEnds) {
+//          System.out.println(deadEnd.getOriginal() + " is not implementable:\n" + RelOptUtil.toString(deadEnd.getOriginal()));
+          RelNode original = deadEnd.getOriginal();
+          PrintWriter pw = new PrintWriter(System.out);
+          pw.print(deadEnd);
+          pw.println(" is not implementable:\n");
+          original.explain(
+                  new RelWriterImpl(pw, SqlExplainLevel.EXPPLAN_ATTRIBUTES, true));
+          pw.flush();
+        }
+        throw e;
+      }
 
       break;
     }
@@ -440,6 +467,42 @@ public class DefaultSqlHandler extends AbstractSqlHandler {
     }
 
     return output;
+  }
+
+  static class DeadEndFinder {
+    public final Set<RelSubset> deadEnds = new HashSet<>();
+    public final Set<RelNode> visitedNodes = new HashSet<>();
+
+    public void visit(RelNode p) {
+      if (!visitedNodes.add(p)) {
+        return;
+      }
+      if (!(p instanceof RelSubset)) {
+        for (RelNode oldInput : p.getInputs()) {
+          visit(oldInput);
+        }
+        return;
+      }
+      RelSubset subset = (RelSubset) p;
+      RelNode cheapest = subset.getBest();
+      if (cheapest != null) {
+        // Subset is implementable, and we are looking for bad ones, so stop here
+        return;
+      }
+
+      boolean isEmpty = true;
+      for (RelNode rel : subset.getRels()) {
+        if (rel instanceof AbstractConverter) {
+          // Converters are not implementable
+          continue;
+        }
+        isEmpty = false;
+        visit(rel);
+      }
+      if (isEmpty) {
+        deadEnds.add(subset);
+      }
+    }
   }
 
   /**

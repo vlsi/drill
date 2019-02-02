@@ -17,6 +17,7 @@
  */
 package org.apache.drill.exec.planner.logical;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
@@ -32,6 +33,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.ImmutableIntList;
 import org.apache.drill.exec.planner.DrillRelBuilder;
 
 import java.util.List;
@@ -63,9 +65,11 @@ public class DrillRelFactories {
 
   public static final RelFactories.JoinFactory DRILL_LOGICAL_JOIN_FACTORY = new DrillJoinFactoryImpl();
 
+  public static final RelFactories.MultiJoinFactory DRILL_LOGICAL_MULTI_JOIN_FACTORY = new DrillMultiJoinFactoryImpl();
+
   public static final RelFactories.AggregateFactory DRILL_LOGICAL_AGGREGATE_FACTORY = new DrillAggregateFactoryImpl();
 
-  public static final RelFactories.SemiJoinFactory DRILL_SEMI_JOIN_FACTORY = new SemiJoinFactoryImpl();
+  public static final RelFactories.SemiJoinFactory DRILL_LOGICAL_SEMI_JOIN_FACTORY = new SemiJoinFactoryImpl();
 
   private static class SemiJoinFactoryImpl implements RelFactories.SemiJoinFactory {
     public RelNode createSemiJoin(RelNode left, RelNode right,
@@ -101,7 +105,8 @@ public class DrillRelFactories {
                           DRILL_LOGICAL_PROJECT_FACTORY,
                           DRILL_LOGICAL_FILTER_FACTORY,
                           DRILL_LOGICAL_JOIN_FACTORY,
-                          //DRILL_LOGICAL_SEMI_JOIN_FACTORY,
+                          DRILL_LOGICAL_SEMI_JOIN_FACTORY,
+                          DRILL_LOGICAL_MULTI_JOIN_FACTORY,
                           //DRILL_LOGICAL_SORT_FACTORY,
                           //DRILL_LOGICAL_MATCH_FACTORY,
                           //DRILL_LOGICAL_SET_OP_FACTORY,
@@ -154,6 +159,19 @@ public class DrillRelFactories {
                               RexNode condition, JoinRelType joinType,
                               Set<String> variablesStopped, boolean semiJoinDone) {
       return new DrillJoinRel(left.getCluster(), left.getTraitSet().plus(DRILL_LOGICAL), left, right, condition, joinType);
+    }
+  }
+
+  /**
+   * Implementation of {@link RelFactories.MultiJoinFactory} that returns a vanilla
+   * {@link DrillJoinRel}.
+   */
+  private static class DrillMultiJoinFactoryImpl implements RelFactories.MultiJoinFactory {
+    @Override
+    public RelNode createMultiJoin(List<RelNode> inputs, RexNode joinFilter, RelDataType rowType, boolean isFullOuterJoin, List<RexNode> outerJoinConditions, List<JoinRelType> joinTypes, List<ImmutableBitSet> projFields, ImmutableMap<Integer, ImmutableIntList> joinFieldRefCountsMap, RexNode postJoinFilter) {
+      RelNode first = inputs.get(0);
+      return new DrillMultiJoinRel(first.getCluster(), first.getCluster().traitSetOf(DRILL_LOGICAL),
+              inputs, joinFilter, rowType, isFullOuterJoin, outerJoinConditions, joinTypes, projFields, joinFieldRefCountsMap, postJoinFilter);
     }
   }
 

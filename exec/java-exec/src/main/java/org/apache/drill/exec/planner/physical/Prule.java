@@ -26,7 +26,7 @@ import org.apache.drill.exec.planner.logical.DrillRelFactories;
 
 public abstract class Prule extends RelOptRule {
   public Prule(RelOptRuleOperand operand, String description) {
-    super(operand, DrillRelFactories.LOGICAL_BUILDER, description);
+    super(operand, DrillRelFactories.DRILL_LOGICAL_BUILDER, description);
   }
 
   public Prule(RelOptRuleOperand operand) {

@@ -17,23 +17,22 @@
  */
 package org.apache.drill.exec.planner.logical;
 
-import org.apache.calcite.adapter.enumerable.EnumerableTableScan;
-
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 
 public class DrillScanRule  extends RelOptRule {
   public static final RelOptRule INSTANCE = new DrillScanRule();
 
   private DrillScanRule() {
-    super(RelOptHelper.any(EnumerableTableScan.class),
-        DrillRelFactories.LOGICAL_BUILDER, "DrillTableRule");
+    super(RelOptHelper.any(LogicalTableScan.class),
+        DrillRelFactories.DRILL_LOGICAL_BUILDER, "DrillTableRule");
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    final EnumerableTableScan access = call.rel(0);
+    final LogicalTableScan access = call.rel(0);
     final RelTraitSet traits = access.getTraitSet().plus(DrillRel.DRILL_LOGICAL);
     call.transformTo(new DrillScanRel(access.getCluster(), traits, access.getTable()));
   }

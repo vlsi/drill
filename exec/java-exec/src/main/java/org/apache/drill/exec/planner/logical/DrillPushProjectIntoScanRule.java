@@ -17,13 +17,13 @@
  */
 package org.apache.drill.exec.planner.logical;
 
-import org.apache.calcite.adapter.enumerable.EnumerableTableScan;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalProject;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rex.RexNode;
 import org.apache.drill.common.exceptions.DrillRuntimeException;
@@ -42,16 +42,16 @@ import java.util.List;
 public class DrillPushProjectIntoScanRule extends RelOptRule {
   public static final RelOptRule INSTANCE =
       new DrillPushProjectIntoScanRule(LogicalProject.class,
-          EnumerableTableScan.class,
-          "DrillPushProjIntoEnumerableScan");
+          LogicalTableScan.class,
+          "DrillPushProjIntoLogicalScan");
 
   public static final RelOptRule DRILL_LOGICAL_INSTANCE =
-      new DrillPushProjectIntoScanRule(LogicalProject.class,
+      new DrillPushProjectIntoScanRule(DrillProjectRel.class,
           DrillScanRel.class,
           "DrillPushProjIntoDrillRelScan");
 
   private DrillPushProjectIntoScanRule(Class<? extends Project> projectClass, Class<? extends TableScan> scanClass, String description) {
-    super(RelOptHelper.some(projectClass, RelOptHelper.any(scanClass)), description);
+    super(RelOptHelper.some(projectClass, RelOptHelper.any(scanClass)), DrillRelFactories.DRILL_LOGICAL_BUILDER, description);
   }
 
   @Override
