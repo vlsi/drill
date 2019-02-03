@@ -95,7 +95,8 @@ public abstract class PruneScanRule extends StoragePluginOptimizerRule {
   private static class DirPruneScanFilterOnProjectRule extends PruneScanRule {
     public DirPruneScanFilterOnProjectRule(OptimizerRulesContext optimizerRulesContext) {
       super(RelOptHelper.some(Filter.class, RelOptHelper.some(Project.class, RelOptHelper.any(TableScan.class))),
-              DrillRelFactories.DRILL_LOGICAL_BUILDER, "DirPruneScanRule:Filter_On_Project", optimizerRulesContext);
+              "DirPruneScanRule:Filter_On_Project", optimizerRulesContext);
+      matchAnyTraitSet();
     }
 
     @Override
@@ -121,7 +122,8 @@ public abstract class PruneScanRule extends StoragePluginOptimizerRule {
   private static class DirPruneScanFilterOnScanRule extends PruneScanRule {
     public DirPruneScanFilterOnScanRule(OptimizerRulesContext optimizerRulesContext) {
       super(RelOptHelper.some(Filter.class, RelOptHelper.any(TableScan.class)),
-              DrillRelFactories.DRILL_LOGICAL_BUILDER, "DirPruneScanRule:Filter_On_Scan", optimizerRulesContext);
+              "DirPruneScanRule:Filter_On_Scan", optimizerRulesContext);
+      matchAnyTraitSet();
     }
 
     @Override
