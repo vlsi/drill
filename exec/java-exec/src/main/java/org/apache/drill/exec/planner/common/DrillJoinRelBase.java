@@ -49,6 +49,8 @@ import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
 public abstract class DrillJoinRelBase extends Join implements DrillJoin {
   protected List<Integer> leftKeys = Lists.newArrayList();
   protected List<Integer> rightKeys = Lists.newArrayList();
+  private final double filterMinSelectivityEstimateFactor;
+  private final double filterMaxSelectivityEstimateFactor;
 
   /**
    * The join key positions for which null values will not match.
@@ -61,6 +63,10 @@ public abstract class DrillJoinRelBase extends Join implements DrillJoin {
     super(cluster, traits, left, right, condition,
         CorrelationId.setOf(Collections.<String> emptySet()), joinType);
     this.joinRowFactor = PrelUtil.getPlannerSettings(cluster.getPlanner()).getRowCountEstimateFactor();
+    filterMinSelectivityEstimateFactor = PrelUtil.
+            getPlannerSettings(cluster.getPlanner()).getFilterMinSelectivityEstimateFactor();
+    filterMaxSelectivityEstimateFactor = PrelUtil.
+            getPlannerSettings(cluster.getPlanner()).getFilterMaxSelectivityEstimateFactor();
   }
 
   @Override
@@ -98,11 +104,24 @@ public abstract class DrillJoinRelBase extends Join implements DrillJoin {
 
   @Override
   public double estimateRowCount(RelMetadataQuery mq) {
-    if (this.condition.isAlwaysTrue()) {
-      return joinRowFactor * this.getLeft().estimateRowCount(mq) * this.getRight().estimateRowCount(mq);
-    } else {
-      return joinRowFactor * Math.max(this.getLeft().estimateRowCount(mq), this.getRight().estimateRowCount(mq));
+    double estimate;
+    estimate = joinRowFactor * this.getLeft().estimateRowCount(mq) * this.getRight().estimateRowCount(mq);
+
+    // Make estimations in line with DrillFilterRel(DrillJoin(, condition=true), ...)
+    double selectivity = mq.getSelectivity(this, condition);
+    if (!condition.isAlwaysFalse()) {
+      // Cap selectivity at filterMinSelectivityEstimateFactor unless it is always FALSE
+      if (selectivity < filterMinSelectivityEstimateFactor) {
+        selectivity = filterMinSelectivityEstimateFactor;
+      }
     }
+    if (!condition.isAlwaysTrue()) {
+      // Cap selectivity at filterMaxSelectivityEstimateFactor unless it is always TRUE
+      if (selectivity > filterMaxSelectivityEstimateFactor) {
+        selectivity = filterMaxSelectivityEstimateFactor;
+      }
+    }
+    return estimate * selectivity;
   }
 
   /**
@@ -163,7 +182,7 @@ public abstract class DrillJoinRelBase extends Join implements DrillJoin {
   }
 
   protected RelOptCost computeHashJoinCost(RelOptPlanner planner, RelMetadataQuery mq) {
-      return computeHashJoinCostWithKeySize(planner, this.getLeftKeys().size(), mq);
+      return computeHashJoinCostWithKeySize(planner, Math.max(1, this.getLeftKeys().size()), mq);
   }
 
   /**
