@@ -23,7 +23,6 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rex.RexNode;
 import org.apache.drill.common.exceptions.DrillRuntimeException;
@@ -42,7 +41,7 @@ import java.util.List;
 public class DrillPushProjectIntoScanRule extends RelOptRule {
   public static final RelOptRule INSTANCE =
       new DrillPushProjectIntoScanRule(LogicalProject.class,
-          LogicalTableScan.class,
+          DrillFileSelectionScan.class,
           "DrillPushProjIntoLogicalScan");
 
   public static final RelOptRule DRILL_LOGICAL_INSTANCE =

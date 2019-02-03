@@ -26,14 +26,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.drill.common.util.GuavaUtils;
+import org.apache.drill.exec.planner.logical.DrillFileSelectionScan;
 import org.apache.drill.shaded.guava.com.google.common.base.Charsets;
 import org.apache.drill.shaded.guava.com.google.common.base.Preconditions;
 import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
 import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
 import org.apache.drill.shaded.guava.com.google.common.collect.Maps;
 
-import org.apache.calcite.adapter.enumerable.EnumerableTableScan;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.util.BitSets;
@@ -42,7 +43,6 @@ import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.common.types.TypeProtos;
 import org.apache.drill.common.types.Types;
 import org.apache.drill.exec.physical.base.FileGroupScan;
-import org.apache.drill.exec.planner.logical.DirPrunedLogicalTableScan;
 import org.apache.drill.exec.planner.logical.DrillRel;
 import org.apache.drill.exec.planner.logical.DrillScanRel;
 import org.apache.drill.exec.planner.logical.DrillTable;
@@ -68,7 +68,7 @@ public class FileSystemPartitionDescriptor extends AbstractPartitionDescriptor {
   private final DrillTable table;
 
   public FileSystemPartitionDescriptor(PlannerSettings settings, TableScan scanRel) {
-    Preconditions.checkArgument(scanRel instanceof DrillScanRel || scanRel instanceof EnumerableTableScan);
+    Preconditions.checkArgument(scanRel instanceof DrillScanRel || scanRel instanceof LogicalTableScan);
     this.partitionLabel = settings.getFsPartitionColumnLabel();
     this.partitionLabelLength = partitionLabel.length();
     this.scanRel = scanRel;
@@ -203,7 +203,7 @@ public class FileSystemPartitionDescriptor extends AbstractPartitionDescriptor {
         fileLocations = selection.getFiles();
         isExpandedPartial = selection.isExpandedPartial();
       }
-    } else if (scanRel instanceof EnumerableTableScan) {
+    } else if (scanRel instanceof LogicalTableScan) {
       FileSelection selection = ((FormatSelection) table.getSelection()).getSelection();
       fileLocations = selection.getFiles();
       isExpandedPartial = selection.isExpandedPartial();
@@ -241,15 +241,15 @@ public class FileSystemPartitionDescriptor extends AbstractPartitionDescriptor {
                       scanRel.getRowType(),
                       ((DrillScanRel) scanRel).getColumns(),
                       true /*filter pushdown*/);
-//    } else if (scanRel instanceof EnumerableTableScan) {
-//      return createNewTableScanFromSelection((EnumerableTableScan)scanRel, newFiles, cacheFileRoot,
-//          wasAllPartitionsPruned, metaContext);
+    } else if (scanRel instanceof LogicalTableScan) {
+      return createNewTableScanFromSelection(scanRel, newFiles, cacheFileRoot,
+          wasAllPartitionsPruned, metaContext);
     } else {
       throw new UnsupportedOperationException("Only DrillScanRel and EnumerableTableScan is allowed!");
     }
   }
 
-  private TableScan createNewTableScanFromSelection(EnumerableTableScan oldScan, List<String> newFiles, String cacheFileRoot,
+  private TableScan createNewTableScanFromSelection(TableScan oldScan, List<String> newFiles, String cacheFileRoot,
       boolean wasAllPartitionsPruned, MetadataContext metaContext) {
     final RelOptTableImpl t = (RelOptTableImpl) oldScan.getTable();
     final FormatSelection formatSelection = (FormatSelection) table.getSelection();
@@ -264,8 +264,7 @@ public class FileSystemPartitionDescriptor extends AbstractPartitionDescriptor {
     final RelOptTableImpl newOptTableImpl = RelOptTableImpl.create(t.getRelOptSchema(), t.getRowType(), newTable,
         GuavaUtils.convertToUnshadedImmutableList(ImmutableList.of()));
 
-    // return an EnumerableTableScan with fileSelection being part of digest of TableScan node.
-    return DirPrunedLogicalTableScan.create(oldScan.getCluster(), newOptTableImpl, newFileSelection.toString());
+    return new DrillFileSelectionScan(oldScan.getCluster(), newOptTableImpl, newFileSelection);
   }
 
   @Override

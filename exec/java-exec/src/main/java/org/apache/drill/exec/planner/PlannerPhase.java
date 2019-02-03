@@ -28,6 +28,8 @@ import org.apache.drill.exec.planner.index.rules.DbScanSortRemovalRule;
 import org.apache.drill.exec.planner.index.rules.DbScanToIndexScanPrule;
 import org.apache.drill.exec.planner.logical.DrillAggregateRule;
 import org.apache.drill.exec.planner.logical.DrillCorrelateRule;
+import org.apache.drill.exec.planner.logical.DrillFileSelectionScan;
+import org.apache.drill.exec.planner.logical.DrillFileSelectionScanRule;
 import org.apache.drill.exec.planner.logical.DrillFilterAggregateTransposeRule;
 import org.apache.drill.exec.planner.logical.DrillFilterItemStarReWriterRule;
 import org.apache.drill.exec.planner.logical.DrillFilterJoinRules;
@@ -325,6 +327,7 @@ public enum PlannerPhase {
       // Due to infinite loop in planning (DRILL-3257/CALCITE-1271), temporarily use this rule in Hep planner
        RuleInstance.PROJECT_SET_OP_TRANSPOSE_RULE,
       RuleInstance.PROJECT_WINDOW_TRANSPOSE_RULE,
+      DrillFileSelectionScanRule.INSTANCE,
       DrillPushProjectIntoScanRule.INSTANCE,
       DrillPushProjectIntoScanRule.DRILL_LOGICAL_INSTANCE,
 

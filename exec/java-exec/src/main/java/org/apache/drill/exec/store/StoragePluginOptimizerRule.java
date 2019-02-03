@@ -19,12 +19,17 @@ package org.apache.drill.exec.store;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleOperand;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.drill.exec.planner.logical.DrillRelFactories;
 
 public abstract class StoragePluginOptimizerRule extends RelOptRule {
 
   public StoragePluginOptimizerRule(RelOptRuleOperand operand, String description) {
-    super(operand, DrillRelFactories.LOGICAL_BUILDER, description);
+    this(operand, DrillRelFactories.LOGICAL_BUILDER, description);
+  }
+
+  public StoragePluginOptimizerRule(RelOptRuleOperand operand, RelBuilderFactory relBuilderFactory, String description) {
+    super(operand, relBuilderFactory, description);
   }
 
 }

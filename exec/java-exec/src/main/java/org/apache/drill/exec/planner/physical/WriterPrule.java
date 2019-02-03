@@ -17,6 +17,8 @@
  */
 package org.apache.drill.exec.planner.physical;
 
+import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.drill.exec.planner.logical.DrillSortRel;
 import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
 import org.apache.drill.shaded.guava.com.google.common.collect.Lists;
 import org.apache.calcite.rel.RelCollation;
@@ -47,11 +49,17 @@ public class WriterPrule extends Prule{
   @Override
   public void onMatch(RelOptRuleCall call) {
     final DrillWriterRel writer = call.rel(0);
-    final RelNode input = call.rel(1);
+    RelNode input = call.rel(1);
 
     final List<Integer> keys = writer.getPartitionKeys();
     final RelCollation collation = getCollation(keys);
     final boolean hashDistribute = PrelUtil.getPlannerSettings(call.getPlanner()).getOptions().getOption(ExecConstants.CTAS_PARTITIONING_HASH_DISTRIBUTE_VALIDATOR);
+    if (!collation.getFieldCollations().isEmpty()) {
+      RelCollation inputCollation = input.getTraitSet().getTrait(RelCollationTraitDef.INSTANCE);
+      if (inputCollation == null || !inputCollation.satisfies(collation)) {
+        input = new DrillSortRel(writer.getCluster(), input.getTraitSet().plus(collation), input, collation);
+      }
+    }
     final RelTraitSet traits = hashDistribute ?
         input.getTraitSet().plus(Prel.DRILL_PHYSICAL).plus(collation).plus(getDistribution(keys)) :
         input.getTraitSet().plus(Prel.DRILL_PHYSICAL).plus(collation);

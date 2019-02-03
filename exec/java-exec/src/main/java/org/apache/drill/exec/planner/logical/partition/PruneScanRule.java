@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.calcite.rel.logical.LogicalTableScan;
+import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.drill.exec.planner.logical.DrillRelFactories;
 import org.apache.drill.shaded.guava.com.google.common.base.Stopwatch;
-import org.apache.calcite.adapter.enumerable.EnumerableTableScan;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
@@ -82,13 +84,18 @@ public abstract class PruneScanRule extends StoragePluginOptimizerRule {
   final OptimizerRulesContext optimizerContext;
 
   public PruneScanRule(RelOptRuleOperand operand, String id, OptimizerRulesContext optimizerContext) {
-    super(operand, id);
+    this(operand, DrillRelFactories.LOGICAL_BUILDER, id, optimizerContext);
+  }
+
+  public PruneScanRule(RelOptRuleOperand operand, RelBuilderFactory relBuilderFactory, String id, OptimizerRulesContext optimizerContext) {
+    super(operand, relBuilderFactory, id);
     this.optimizerContext = optimizerContext;
   }
 
   private static class DirPruneScanFilterOnProjectRule extends PruneScanRule {
     public DirPruneScanFilterOnProjectRule(OptimizerRulesContext optimizerRulesContext) {
-      super(RelOptHelper.some(Filter.class, RelOptHelper.some(Project.class, RelOptHelper.any(TableScan.class))), "DirPruneScanRule:Filter_On_Project", optimizerRulesContext);
+      super(RelOptHelper.some(Filter.class, RelOptHelper.some(Project.class, RelOptHelper.any(TableScan.class))),
+              DrillRelFactories.DRILL_LOGICAL_BUILDER, "DirPruneScanRule:Filter_On_Project", optimizerRulesContext);
     }
 
     @Override
@@ -113,7 +120,8 @@ public abstract class PruneScanRule extends StoragePluginOptimizerRule {
 
   private static class DirPruneScanFilterOnScanRule extends PruneScanRule {
     public DirPruneScanFilterOnScanRule(OptimizerRulesContext optimizerRulesContext) {
-      super(RelOptHelper.some(Filter.class, RelOptHelper.any(TableScan.class)), "DirPruneScanRule:Filter_On_Scan", optimizerRulesContext);
+      super(RelOptHelper.some(Filter.class, RelOptHelper.any(TableScan.class)),
+              DrillRelFactories.DRILL_LOGICAL_BUILDER, "DirPruneScanRule:Filter_On_Scan", optimizerRulesContext);
     }
 
     @Override
@@ -528,7 +536,7 @@ public abstract class PruneScanRule extends StoragePluginOptimizerRule {
   }
 
   private static boolean isQualifiedDirPruning(final TableScan scan) {
-    if (scan instanceof EnumerableTableScan) {
+    if (scan instanceof LogicalTableScan) {
       final Object selection = getDrillTable(scan).getSelection();
       if (selection instanceof FormatSelection
           && ((FormatSelection)selection).supportDirPruning()) {
