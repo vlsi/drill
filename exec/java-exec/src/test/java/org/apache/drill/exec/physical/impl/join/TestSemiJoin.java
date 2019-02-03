@@ -25,11 +25,21 @@ import org.apache.drill.test.ClientFixture;
 import org.apache.drill.test.ClusterFixture;
 import org.apache.drill.test.ClusterFixtureBuilder;
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.experimental.categories.Category;
 
 @Category({SlowTest.class, OperatorTest.class})
 public class TestSemiJoin extends BaseTestQuery {
+  private void assertContainsSemiJoin(String queryPlan) {
+    assertTrue("query plan should contain <<semi-join: =[true]>>: " + queryPlan, queryPlan.contains("semi-join: =[true]"));
+  }
+
+  private void assertNotContainsSemiJoin(String queryPlan) {
+    assertFalse("query plan should NOT contain <<semi-join: =[true]>>: " + queryPlan, queryPlan.contains("semi-join: =[true]"));
+  }
+
   @Test
   public void testInClauseToSemiJoin() throws Exception {
     String sql = "select employee_id, full_name from cp.`employee.json` where employee_id in (select employee_id from cp.`employee.json` )";
@@ -40,7 +50,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(queryPlan.contains("semi-join: =[true]"));
+      assertContainsSemiJoin(queryPlan);
     }
   }
 
@@ -54,7 +64,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(!queryPlan.contains("semi-join: =[true]"));
+      assertNotContainsSemiJoin(queryPlan);
     }
   }
 
@@ -69,7 +79,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(!queryPlan.contains("semi-join: =[true]"));
+      assertNotContainsSemiJoin(queryPlan);
     }
   }
 
@@ -84,7 +94,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(queryPlan.contains("semi-join: =[true]"));
+      assertContainsSemiJoin(queryPlan);
     }
   }
 
@@ -98,7 +108,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(queryPlan.contains("semi-join: =[true]"));
+      assertContainsSemiJoin(queryPlan);
     }
   }
 
@@ -112,7 +122,7 @@ public class TestSemiJoin extends BaseTestQuery {
     try (ClusterFixture cluster = builder.build();
          ClientFixture client = cluster.clientFixture()) {
       String queryPlan = client.queryBuilder().sql(sql).explainText();
-      assertTrue(queryPlan.contains("semi-join: =[true]"));
+      assertContainsSemiJoin(queryPlan);
     }
   }
 }

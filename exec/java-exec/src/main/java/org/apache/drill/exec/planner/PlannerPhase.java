@@ -51,6 +51,7 @@ import org.apache.drill.exec.planner.logical.DrillReduceAggregatesRule;
 import org.apache.drill.exec.planner.logical.DrillReduceExpressionsRule;
 import org.apache.drill.exec.planner.logical.DrillRelFactories;
 import org.apache.drill.exec.planner.logical.DrillScanRule;
+import org.apache.drill.exec.planner.logical.DrillSemiJoinRule;
 import org.apache.drill.exec.planner.logical.DrillSortRule;
 import org.apache.drill.exec.planner.logical.DrillUnionAllRule;
 import org.apache.drill.exec.planner.logical.DrillUnnestRule;
@@ -383,6 +384,7 @@ public enum PlannerPhase {
     if (optimizerRulesContext.getPlannerSettings().isHashJoinEnabled() &&
         optimizerRulesContext.getPlannerSettings().isSemiJoinEnabled()) {
       basicRules.add(RuleInstance.SEMI_JOIN_PROJECT_RULE);
+      basicRules.add(DrillSemiJoinRule.INSTANCE);
     }
 
     return RuleSets.ofList(basicRules.build());
